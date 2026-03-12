@@ -1,0 +1,24 @@
+{
+    "name": "discord-ordinals-bot",
+    "version": "1.0.0",
+    "description": "Discord bot to verify Bitcoin Ordinals holdings and assign roles",
+    "main": "bot.js",
+    "scripts": {
+        "start": "node bot.js",
+        "dev": "node bot.js"
+    },
+    "keywords": [
+        "discord",
+        "bot",
+        "ordinals",
+        "bitcoin",
+        "nft",
+        "verification"
+    ],
+    "author": "Urua Labs",
+    "license": "MIT",
+    "dependencies": {
+        "discord.js": "^14.14.1",
+        "dotenv": "^16.3.1"
+    }
+}

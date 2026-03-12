@@ -1,0 +1,36 @@
+{
+    "Bitcoin Punks": {
+        "description": "First 10K Bitcoin-native Punks on Ordinals",
+        "inscriptionIds": [],
+        "genus": "bpunk",
+        "roleId": "YOUR_ROLE_ID_HERE",
+        "emoji": "🦄"
+    },
+    "Bitcoin Frogs": {
+        "description": "Frogs on Bitcoin",
+        "inscriptionIds": [],
+        "genus": "frog",
+        "roleId": "YOUR_ROLE_ID_HERE",
+        "emoji": "🐸"
+    },
+    "OnChain Monkey": {
+        "description": "OCM - First 10K Ordinals collection",
+        "inscriptionIds": [],
+        "genus": "ocm",
+        "roleId": "YOUR_ROLE_ID_HERE",
+        "emoji": "🐒"
+    },
+    "Taproot Wizards": {
+        "description": "Pure Bitcoin Magic",
+        "inscriptionIds": [],
+        "genus": "taprootwizards",
+        "roleId": "YOUR_ROLE_ID_HERE",
+        "emoji": "🧙"
+    },
+    "Ordinal Maxis": {
+        "description": "Anyone holding Ordinals!",
+        "minimumInscriptions": 1,
+        "roleId": "YOUR_ROLE_ID_HERE",
+        "emoji": "₿"
+    }
+}
