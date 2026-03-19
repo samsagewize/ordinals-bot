@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ordinookis Bot — Setup Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --btc: #f7931a;
+    --btc-dark: #c96e00;
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --surface2: #1c1c1c;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --muted: #888;
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #3b82f6;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 40px 20px 80px;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 48px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .header .badge {
+    display: inline-block;
+    background: rgba(247,147,26,0.15);
+    border: 1px solid rgba(247,147,26,0.3);
+    color: var(--btc);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 38px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, var(--btc) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .header p { color: var(--muted); font-size: 16px; }
+
+  /* FLOW DIAGRAM */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 0 0 48px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .flow-step {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 120px;
+  }
+  .flow-step span { display: block; color: var(--btc); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .flow-arrow { color: var(--muted); font-size: 18px; padding: 0 4px; }
+
+  /* SECTIONS */
+  .section {
+    margin-bottom: 40px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .step-num {
+    width: 36px; height: 36px;
+    background: var(--btc);
+    color: #000;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .section-header h2 { font-size: 20px; font-weight: 700; }
+  .section-header .tag {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-weight: 600;
+  }
+  .tag.required { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .tag.optional { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+  .tag.done { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+
+  .card h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--btc); }
+
+  .card ol, .card ul { padding-left: 20px; }
+  .card li { margin-bottom: 6px; color: #ccc; }
+  .card li strong { color: var(--text); }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(247,147,26,0.1);
+    border: 1px solid rgba(247,147,26,0.2);
+    color: var(--btc);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 13px;
+  }
+
+  pre {
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #d4d4d4;
+    margin: 12px 0;
+  }
+
+  pre .comment { color: #6a9955; }
+  pre .key { color: #9cdcfe; }
+  pre .val { color: #ce9178; }
+  pre .cmd { color: var(--btc); }
+
+  .env-table { width: 100%; border-collapse: collapse; }
+  .env-table th {
+    background: var(--surface2);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .env-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: top;
+  }
+  .env-table tr:last-child td { border-bottom: none; }
+  .env-table td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--btc); white-space: nowrap; }
+  .env-table td:nth-child(2) { color: #aaa; }
+  .env-table td:nth-child(3) { color: var(--green); font-weight: 600; }
+
+  .warning {
+    background: rgba(247,147,26,0.08);
+    border: 1px solid rgba(247,147,26,0.25);
+    border-left: 3px solid var(--btc);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #ccc;
+    margin: 12px 0;
+  }
+  .warning strong { color: var(--btc); }
+
+  .info {
+    background: rgba(59,130,246,0.07);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #ccc;
+    margin: 12px 0;
+  }
+  .info strong { color: var(--blue); }
+
+  .commands-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .cmd-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .cmd-card .cmd-name {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--btc);
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .cmd-card .cmd-who {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .cmd-card.user .cmd-who { color: var(--green); }
+  .cmd-card.mod .cmd-who { color: #a855f7; }
+  .cmd-card p { font-size: 13px; color: #aaa; }
+
+  .user-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .flow-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .flow-item:last-child { border-bottom: none; }
+  .flow-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .flow-icon.btc { background: rgba(247,147,26,0.15); }
+  .flow-icon.discord { background: rgba(88,101,242,0.15); }
+  .flow-icon.check { background: rgba(34,197,94,0.15); }
+  .flow-icon.role { background: rgba(168,85,247,0.15); }
+  .flow-content h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .flow-content p { font-size: 13px; color: #999; }
+
+  .checklist { list-style: none; padding: 0; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    color: #ccc;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before {
+    content: "☐";
+    color: var(--btc);
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .footer {
+    text-align: center;
+    padding-top: 48px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  .footer a { color: var(--btc); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .commands-grid { grid-template-columns: 1fr; }
+    .flow { justify-content: flex-start; }
+    .header h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="badge">Bitcoin Ordinals · Discord Verification</div>
+    <h1>Ordinookis Bot<br/>Setup Guide</h1>
+    <p>Full walkthrough — from zero to live verified holders in your Discord.</p>
+  </div>
+
+  <!-- USER FLOW OVERVIEW -->
+  <div class="flow">
+    <div class="flow-step"><span>Step 1</span>User runs /verify</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><span>Step 2</span>Sends $5 BTC</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><span>Step 3</span>Runs /confirm txid</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><span>Auto</span>Bot checks Hiro + Ord.io</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><span>Auto</span>Role assigned 🎉</div>
+  </div>
+
+  <!-- SECTION 1: Prerequisites -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">1</div>
+      <h2>What You Need First</h2>
+      <span class="tag required">Required</span>
+    </div>
+    <div class="card">
+      <ul>
+        <li><strong>Node.js 18+</strong> — download at <a href="https://nodejs.org" style="color:var(--btc)">nodejs.org</a></li>
+        <li><strong>A server or computer</strong> to host the bot 24/7 (Railway, Render, DigitalOcean, or your own VPS)</li>
+        <li><strong>Your Ordinookis Discord server</strong> — you need Admin permissions</li>
+        <li><strong>A Bitcoin wallet address</strong> you control — this is where the $5 fees go</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Create Discord Bot -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">2</div>
+      <h2>Create the Discord Bot</h2>
+      <span class="tag required">Required</span>
+    </div>
+    <div class="card">
+      <h3>On Discord Developer Portal</h3>
+      <ol>
+        <li>Go to <strong>discord.com/developers/applications</strong></li>
+        <li>Click <strong>New Application</strong> → Name it <code>Ordinookis Bot</code></li>
+        <li>Go to the <strong>Bot</strong> tab on the left sidebar</li>
+        <li>Click <strong>Add Bot</strong> → confirm</li>
+        <li>Under <strong>Privileged Gateway Intents</strong>, enable:<br/><strong>SERVER MEMBERS INTENT</strong> ✅</li>
+        <li>Click <strong>Reset Token</strong> → copy and save it somewhere safe</li>
+        <li>Go to <strong>General Information</strong> → copy the <strong>Application ID</strong></li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Invite the Bot to Your Server</h3>
+      <ol>
+        <li>Go to <strong>OAuth2 → URL Generator</strong></li>
+        <li>Under <strong>Scopes</strong>, check: <code>bot</code> and <code>applications.commands</code></li>
+        <li>Under <strong>Bot Permissions</strong>, check:
+          <ul>
+            <li>✅ Manage Roles</li>
+            <li>✅ Send Messages</li>
+            <li>✅ Use Slash Commands</li>
+            <li>✅ Read Message History</li>
+          </ul>
+        </li>
+        <li>Copy the generated URL at the bottom → open it in your browser</li>
+        <li>Select your <strong>Ordinookis Discord server</strong> → Authorize</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Get Your Server (Guild) ID</h3>
+      <ol>
+        <li>In Discord, go to <strong>Settings → Advanced</strong> → enable <strong>Developer Mode</strong></li>
+        <li>Right-click your server icon in the sidebar</li>
+        <li>Click <strong>Copy Server ID</strong></li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- SECTION 3: Install & Configure -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">3</div>
+      <h2>Install & Configure the Bot</h2>
+      <span class="tag required">Required</span>
+    </div>
+    <div class="card">
+      <h3>Install Dependencies</h3>
+      <pre><span class="comment"># Clone or download the bot files, then:</span>
+<span class="cmd">npm install</span>
+
+<span class="comment"># Copy the example env file</span>
+<span class="cmd">cp .env.example .env</span></pre>
+    </div>
+    <div class="card">
+      <h3>Fill in Your .env File</h3>
+      <p style="color:#aaa; font-size:13px; margin-bottom:14px;">Open <code>.env</code> in any text editor and fill in these values:</p>
+      <table class="env-table">
+        <thead>
+          <tr><th>Variable</th><th>What it is</th><th>Where to get it</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>DISCORD_BOT_TOKEN</td>
+            <td>Your secret bot token</td>
+            <td>Bot tab → Reset Token</td>
+          </tr>
+          <tr>
+            <td>DISCORD_CLIENT_ID</td>
+            <td>Your app's ID</td>
+            <td>General Information → Application ID</td>
+          </tr>
+          <tr>
+            <td>DISCORD_GUILD_ID</td>
+            <td>Your Discord server ID</td>
+            <td>Right-click server → Copy Server ID</td>
+          </tr>
+          <tr>
+            <td>PAYMENT_BTC_ADDRESS</td>
+            <td>Your BTC wallet address to receive fees</td>
+            <td>Your Xverse / Leather / hardware wallet</td>
+          </tr>
+          <tr>
+            <td>PAYMENT_SATS</td>
+            <td>Fee in satoshis (5000 ≈ $5)</td>
+            <td>Leave as <code>5000</code></td>
+          </tr>
+          <tr>
+            <td>HOLDER_ROLE_NAME</td>
+            <td>Name of role to give verified holders</td>
+            <td>Leave as <code>Ordinookis Holder</code></td>
+          </tr>
+          <tr>
+            <td>INSCRIPTION_IDS</td>
+            <td>Comma-separated inscription IDs (optional but recommended)</td>
+            <td>See Step 4 below</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="warning">
+      <strong>⚠️ Never share your DISCORD_BOT_TOKEN</strong> — treat it like a password. If you accidentally post it publicly, go to the Developer Portal and reset it immediately.
+    </div>
+  </div>
+
+  <!-- SECTION 4: Collection Config -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">4</div>
+      <h2>Configure Ordinookis Collection</h2>
+      <span class="tag optional">Recommended</span>
+    </div>
+    <div class="card">
+      <h3>Option A — Add Inscription IDs (most accurate)</h3>
+      <p style="color:#aaa;font-size:13px;margin-bottom:12px;">This is the most reliable method. Go to <a href="https://ordiscan.com/collections" style="color:var(--btc)">ordiscan.com/collections</a> or <a href="https://www.satflow.com/ordinals/ordinookis" style="color:var(--btc)">satflow.com/ordinals/ordinookis</a> and find the Ordinookis collection. Get the inscription IDs and add them to your <code>.env</code>:</p>
+      <pre><span class="key">INSCRIPTION_IDS</span>=<span class="val">abc123txidherei0,def456txidherej0,...</span></pre>
+    </div>
+    <div class="card">
+      <h3>Option B — Collection Name Matching (automatic fallback)</h3>
+      <p style="color:#aaa;font-size:13px;">If you leave <code>INSCRIPTION_IDS</code> blank, the bot automatically searches for <code>"ordinookis"</code> in the collection name field across Hiro, Ord.io, and Ordinals.com. This works as long as your collection is indexed by those APIs.</p>
+    </div>
+    <div class="info">
+      <strong>💡 Pro tip:</strong> You can get your collection's inscription IDs from the Ordinookis listings on Satflow. Click any item → the URL contains its inscription ID (e.g. <code>abc123...i0</code>).
+    </div>
+  </div>
+
+  <!-- SECTION 5: Discord Server Setup -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">5</div>
+      <h2>Set Up Your Discord Server</h2>
+      <span class="tag required">Required</span>
+    </div>
+    <div class="card">
+      <h3>Role Hierarchy — CRITICAL</h3>
+      <p style="color:#aaa;font-size:13px;margin-bottom:12px;">The bot can only assign roles that are <strong>below its own role</strong> in the hierarchy. If this is wrong, role assignment will silently fail.</p>
+      <ol>
+        <li>Go to your Discord server → <strong>Server Settings → Roles</strong></li>
+        <li>Find the <strong>Ordinookis Bot</strong> role (auto-created when you invited it)</li>
+        <li>Drag it <strong>above</strong> the <code>Ordinookis Holder</code> role</li>
+        <li>Save changes</li>
+      </ol>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px;font-size:13px;">
+        <strong>Correct order (top = highest):</strong><br/>
+        <span style="color:#aaa;">🔴 Admin<br/>🟠 Moderator<br/><strong style="color:var(--btc);">🟡 Ordinookis Bot ← must be here</strong><br/>🟢 Ordinookis Holder ← bot assigns this<br/>⚪ @everyone</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Create a #verification Channel</h3>
+      <ol>
+        <li>Create a new channel called <code>#verify-here</code> or <code>#get-role</code></li>
+        <li>Pin a message explaining the steps (see below)</li>
+        <li>Optionally restrict the channel so only unverified users see it</li>
+      </ol>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px;">
+        <p style="font-size:13px;color:#aaa;margin-bottom:8px;"><strong style="color:var(--text);">📌 Suggested pinned message:</strong></p>
+        <p style="font-size:13px;color:#aaa;">
+          👋 <strong>Welcome, Ordinookis holder!</strong><br/><br/>
+          To get your exclusive holder role:<br/>
+          1️⃣ Run <code>/verify &lt;your_btc_address&gt;</code><br/>
+          2️⃣ Send the <strong>one-time $5 fee</strong> in BTC to the address shown<br/>
+          3️⃣ Run <code>/confirm &lt;your_txid&gt;</code> after sending<br/>
+          4️⃣ Role is assigned automatically once confirmed on-chain ✅<br/><br/>
+          Check your progress anytime with <code>/status</code>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: Launch -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">6</div>
+      <h2>Deploy Slash Commands & Launch</h2>
+      <span class="tag required">Required</span>
+    </div>
+    <div class="card">
+      <h3>Register Commands (one time only)</h3>
+      <pre><span class="cmd">npm run deploy</span>
+<span class="comment"># You should see: ✅ Commands registered!</span></pre>
+    </div>
+    <div class="card">
+      <h3>Start the Bot</h3>
+      <pre><span class="cmd">npm start</span>
+<span class="comment"># You should see:
+# ✅ Ordinookis Bot online as Ordinookis Bot#1234
+# 📦 Database ready</span></pre>
+    </div>
+    <div class="card">
+      <h3>For 24/7 Hosting (pick one)</h3>
+      <pre><span class="comment"># Option A — Railway (easiest, free tier)</span>
+<span class="comment"># Push to GitHub → connect repo on railway.app → Deploy</span>
+
+<span class="comment"># Option B — VPS with PM2</span>
+<span class="cmd">npm install -g pm2</span>
+<span class="cmd">pm2 start bot.js --name ordinookis-bot</span>
+<span class="cmd">pm2 save</span>
+<span class="cmd">pm2 startup</span>
+
+<span class="comment"># Option C — Render.com</span>
+<span class="comment"># Connect GitHub → New Web Service → Start command: npm start</span></pre>
+    </div>
+  </div>
+
+  <!-- Bot Commands Reference -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">7</div>
+      <h2>Bot Commands Reference</h2>
+      <span class="tag done">Reference</span>
+    </div>
+    <div class="commands-grid">
+      <div class="cmd-card user">
+        <div class="cmd-name">/verify &lt;btc_address&gt;</div>
+        <div class="cmd-who">👤 User command</div>
+        <p>Links wallet & shows payment instructions with your BTC address + fee amount.</p>
+      </div>
+      <div class="cmd-card user">
+        <div class="cmd-name">/confirm &lt;txid&gt;</div>
+        <div class="cmd-who">👤 User command</div>
+        <p>Submits payment TX. Bot verifies on-chain, checks Ordinals, grants role.</p>
+      </div>
+      <div class="cmd-card user">
+        <div class="cmd-name">/status</div>
+        <div class="cmd-who">👤 User command</div>
+        <p>Shows current verification progress (wallet linked → paid → verified → role).</p>
+      </div>
+      <div class="cmd-card mod">
+        <div class="cmd-name">/admin lookup &lt;user&gt;</div>
+        <div class="cmd-who">🛡️ Mod only</div>
+        <p>Shows full verification record for any Discord user.</p>
+      </div>
+      <div class="cmd-card mod">
+        <div class="cmd-name">/admin manual_verify &lt;user&gt;</div>
+        <div class="cmd-who">🛡️ Mod only</div>
+        <p>Manually grant role to a user (bypasses payment/ordinal check).</p>
+      </div>
+      <div class="cmd-card mod">
+        <div class="cmd-name">/admin stats</div>
+        <div class="cmd-who">🛡️ Mod only</div>
+        <p>Shows total linked, paid, verified, and role-granted counts.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Experience Flow -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">8</div>
+      <h2>What Your Users Experience</h2>
+      <span class="tag done">Reference</span>
+    </div>
+    <div class="card">
+      <div class="user-flow">
+        <div class="flow-item">
+          <div class="flow-icon discord">💬</div>
+          <div class="flow-content">
+            <h4>User runs <code>/verify bc1q...their_address</code></h4>
+            <p>Bot saves their wallet address and sends them a DM with your BTC payment address, the exact amount to send (5000 sats), and instructions to run /confirm after.</p>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-icon btc">₿</div>
+          <div class="flow-content">
+            <h4>User sends 5000 sats from their Ordinookis wallet</h4>
+            <p>They use Xverse, Leather, or any BTC wallet. Sending FROM the same address proves wallet ownership — no signature needed.</p>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-icon discord">💬</div>
+          <div class="flow-content">
+            <h4>User runs <code>/confirm &lt;txid&gt;</code></h4>
+            <p>They grab the transaction ID from their wallet's history and submit it. Bot looks it up on mempool.space instantly.</p>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-icon check">🔍</div>
+          <div class="flow-content">
+            <h4>Bot verifies payment + Ordinookis holding in parallel</h4>
+            <p>Checks mempool.space for confirmed TX. Simultaneously queries Hiro API, Ord.io, and Ordinals.com for Ordinookis in that wallet. Any one API confirming = pass.</p>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-icon role">🎉</div>
+          <div class="flow-content">
+            <h4>Role automatically assigned</h4>
+            <p>User gets the <code>Ordinookis Holder</code> role instantly. Bot replies with confirmation showing inscription ID and which API confirmed it.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pre-launch Checklist -->
+  <div class="section">
+    <div class="section-header">
+      <div class="step-num">✓</div>
+      <h2>Pre-Launch Checklist</h2>
+      <span class="tag required">Do this before going live</span>
+    </div>
+    <div class="card">
+      <ul class="checklist">
+        <li>Discord bot created, token copied</li>
+        <li>Bot invited to server with Manage Roles + Slash Commands permissions</li>
+        <li>Developer Mode enabled, Guild ID copied</li>
+        <li><code>.env</code> file filled in with all required values</li>
+        <li>Your BTC payment address set in <code>PAYMENT_BTC_ADDRESS</code></li>
+        <li><code>npm run deploy</code> run successfully — commands visible in Discord</li>
+        <li>Bot role is <strong>above</strong> Ordinookis Holder in role hierarchy</li>
+        <li>#verify-here channel created with pinned instructions</li>
+        <li>Test with your own wallet: run /verify → pay → /confirm → get role</li>
+        <li>Bot running 24/7 on a server (Railway / Render / VPS)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Ordinookis Bot — built for <a href="https://www.satflow.com/ordinals/ordinookis">Ordinookis</a> on Bitcoin Ordinals</p>
+    <p style="margin-top:6px;">Questions? Check your GitHub repo or ask in your own Discord.</p>
+  </div>
+
+</div>
+</body>
+</html>
