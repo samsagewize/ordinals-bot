@@ -1,37 +1,20 @@
-# Discord Ordinals Verification Bot
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-A Discord bot that verifies users' Bitcoin Ordinals holdings and assigns roles based on their collection.
+# Run and deploy your AI Studio app
 
-## Features
+This contains everything you need to run your app locally.
 
-- 🔗 **Wallet Linking**: Users link their Bitcoin address to Discord
-- ✅ **Ordinal Verification**: Checks if address holds specific ordinals/collections
-- 🎭 **Auto-Roles**: Assigns roles based on holdings
-- 📊 **Collection Tracking**: Support for popular Ordinal collections
+View your app in AI Studio: https://ai.studio/apps/696137fd-70ef-4a10-9c73-d8ce67c9d549
 
-## Setup
+## Run Locally
 
-```bash
-npm install
-cp .env.example .env
-# Edit .env with your bot token
-npm start
-```
+**Prerequisites:**  Node.js
 
-## Commands
 
-- `/verify <bitcoin_address>` - Link and verify ordinal holdings
-- `/check [user]` - Check another user's verified ordinals
-- `/collections` - List supported collections
-- `/unlink` - Remove your linked address
-
-## Environment Variables
-
-```
-DISCORD_BOT_TOKEN=your_token
-BOT_OWNER_ID=your_discord_id
-```
-
-## Supported Collections
-
-Configure in `config/collections.json` - add any collection by inscription ID or name.
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`

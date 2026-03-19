@@ -1,0 +1,7 @@
+{
+  "name": "Canopy - Discord Community Management",
+  "description": "A comprehensive web-based dashboard for managing NFT verification, wallet linking, and automated Discord role management for DAOs and NFT communities, inspired by Matrica Labs.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
