@@ -1,20 +1,19 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { verifyOrdinalHoldings, getAddressInscriptions } = require('./utils/ordinalsApi');
+const { Client, GatewayIntentBits, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
-// Load config
-const config = require('./config/config');
+// Load config & collections
 const collections = require('./config/collections.json');
 
-// Simple JSON-based storage
-const DATA_FILE = path.join(__dirname, 'data', 'verified_users.json');
+// Data storage
+const DATA_DIR = path.join(__dirname, 'data');
+const DATA_FILE = path.join(DATA_DIR, 'verified_users.json');
+
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, JSON.stringify({}, null, 2));
 
 function loadData() {
-    if (!fs.existsSync(DATA_FILE)) {
-        fs.writeFileSync(DATA_FILE, JSON.stringify({}));
-    }
     return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
 }
 
@@ -22,93 +21,56 @@ function saveData(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
-// Initialize Discord client
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessages
-    ]
-});
+// Utils
+const { getAddressInscriptions } = require('./utils/ordinalsApi');
 
-// Create slash commands
-const verifyCommand = new SlashCommandBuilder()
-    .setName('verify')
-    .setDescription('Verify your Bitcoin ordinal holdings')
-    .addStringOption(option =>
-        option.setName('address')
-            .setDescription('Your Bitcoin address (starts with bc1, 1, or 3)')
-            .setRequired(true));
-
-const checkCommand = new SlashCommandBuilder()
-    .setName('check')
-    .setDescription('Check ordinal holdings for a user')
-    .addUserOption(option =>
-        option.setName('user')
-            .setDescription('User to check (leave empty for yourself)'));
-
-const collectionsCommand = new SlashCommandBuilder()
-    .setName('collections')
-    .setDescription('List supported ordinal collections');
-
-const unlinkCommand = new SlashCommandBuilder()
-    .setName('unlink')
-    .setDescription('Unlink your Bitcoin address');
-
-// Validate Bitcoin address (basic)
 function isValidBitcoinAddress(address) {
-    // Legacy (1...), SegWit (3...), Native SegWit (bc1...)
-    const bech32Regex = /^bc1[a-z0-9]{25,90}$/i;
-    const legacyRegex = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/;
-    return bech32Regex.test(address) || legacyRegex.test(address);
+    const bech32 = /^bc1[a-z0-9]{25,90}$/i;
+    const legacy = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/;
+    return bech32.test(address) || legacy.test(address);
 }
 
-// Verify and assign roles
+// Verify user
 async function verifyUser(userId, address, guild) {
     const data = loadData();
     const member = await guild.members.fetch(userId);
-    
+
     try {
-        // Get user's inscriptions
         const inscriptions = await getAddressInscriptions(address);
         
         if (!inscriptions || inscriptions.length === 0) {
-            return { success: false, message: 'No ordinals found for this address!' };
+            return { success: false, message: 'No Ordinals found for this address.' };
         }
 
-        // Check against configured collections
         const userCollections = new Set();
-        const matchedInscriptions = [];
-        
+
         for (const inscription of inscriptions) {
             for (const [colName, colData] of Object.entries(collections)) {
-                if (colData.inscriptionIds && colData.inscriptionIds.includes(inscription.id)) {
-                    userCollections.add(colName);
-                    matchedInscriptions.push({ collection: colName, inscription: inscription });
-                }
-                // Check by genus/type if available
                 if (colData.genus && inscription.genus === colData.genus) {
+                    userCollections.add(colName);
+                }
+                if (colData.inscriptionIds?.includes(inscription.id)) {
                     userCollections.add(colName);
                 }
             }
         }
 
         // Assign roles
-        const rolesToAssign = [];
+        let rolesAssigned = 0;
         for (const colName of userCollections) {
-            const colConfig = collections[colName];
-            if (colConfig.roleId) {
-                const role = guild.roles.cache.get(colConfig.roleId);
+            const roleId = collections[colName].roleId;
+            if (roleId) {
+                const role = guild.roles.cache.get(roleId);
                 if (role) {
-                    rolesToAssign.push(role);
                     await member.roles.add(role);
+                    rolesAssigned++;
                 }
             }
         }
 
-        // Save verified data
+        // Save
         data[userId] = {
-            address: address,
+            address,
             verifiedAt: new Date().toISOString(),
             collections: Array.from(userCollections),
             inscriptionCount: inscriptions.length
@@ -119,43 +81,46 @@ async function verifyUser(userId, address, guild) {
             success: true,
             collections: Array.from(userCollections),
             inscriptionCount: inscriptions.length,
-            rolesAssigned: rolesToAssign.length
+            rolesAssigned
         };
 
     } catch (error) {
-        console.error('Verification error:', error);
-        return { success: false, message: 'Error verifying holdings. Please try again.' };
+        console.error(error);
+        return { success: false, message: 'Verification failed. Try again later.' };
     }
 }
 
-client.once('ready', async () => {
-    console.log(`🤖 ${client.user.tag} is ready!`);
-    
-    // Register commands
-    const commands = [
-        verifyCommand,
-        checkCommand,
-        collectionsCommand,
-        unlinkCommand
-    ];
-    
-    await client.application.commands.set(commands);
-    console.log('✓ Slash commands registered');
+// Discord Client
+const client = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
 });
 
-// Handle slash commands
-client.on('interactionCreate', async (interaction) => {
+client.once('ready', async () => {
+    console.log(`✅ ${client.user.tag} is online!`);
+
+    const commands = [
+        new SlashCommandBuilder().setName('verify').setDescription('Verify your Ordinals')
+            .addStringOption(opt => opt.setName('address').setDescription('Your BTC address').setRequired(true)),
+        new SlashCommandBuilder().setName('check').setDescription('Check your verified holdings'),
+        new SlashCommandBuilder().setName('collections').setDescription('List supported collections'),
+        new SlashCommandBuilder().setName('unlink').setDescription('Unlink your address')
+    ];
+
+    await client.application.commands.set(commands);
+    console.log('✅ Slash commands registered');
+});
+
+client.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
 
-    const { commandName, user, options, guild } = interaction;
+    const { commandName, user, guild } = interaction;
 
     if (commandName === 'verify') {
         await interaction.deferReply();
-        
-        const address = options.getString('address').trim();
-        
+        const address = interaction.options.getString('address').trim();
+
         if (!isValidBitcoinAddress(address)) {
-            return interaction.editReply('❌ Invalid Bitcoin address! Must start with 1, 3, or bc1.');
+            return interaction.editReply('❌ Invalid Bitcoin address.');
         }
 
         const result = await verifyUser(user.id, address, guild);
@@ -164,12 +129,12 @@ client.on('interactionCreate', async (interaction) => {
             const embed = new EmbedBuilder()
                 .setColor(0x00FF00)
                 .setTitle('✅ Verification Successful!')
-                .setDescription(`Found **${result.inscriptionCount}** ordinals`)
+                .setDescription(`Found **${result.inscriptionCount}** Ordinals`)
                 .addFields(
-                    { name: 'Collections Verified', value: result.collections.length > 0 ? result.collections.join(', ') : 'None yet' },
-                    { name: 'Roles Assigned', value: result.rolesAssigned.toString() }
+                    { name: 'Collections', value: result.collections.join(', ') || 'None', inline: true },
+                    { name: 'Roles Assigned', value: result.rolesAssigned.toString(), inline: true }
                 )
-                .setFooter({ text: `Address: ${address.slice(0, 8)}...${address.slice(-4)}` });
+                .setFooter({ text: `Address: ${address.slice(0,8)}...${address.slice(-4)}` });
 
             await interaction.editReply({ embeds: [embed] });
         } else {
@@ -178,22 +143,18 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (commandName === 'check') {
-        const targetUser = options.getUser('user') || user;
         const data = loadData();
-        const userData = data[targetUser.id];
+        const userData = data[user.id];
 
-        if (!userData) {
-            return interaction.reply(`❌ ${targetUser.username} hasn't verified their ordinals yet.`);
-        }
+        if (!userData) return interaction.reply("❌ You haven't verified yet.");
 
         const embed = new EmbedBuilder()
             .setColor(0x0099FF)
-            .setTitle(`📊 ${targetUser.username}'s Ordinals`)
+            .setTitle(`📊 ${user.username}'s Ordinals`)
             .addFields(
-                { name: 'Address', value: `\`${userData.address}\``, inline: false },
-                { name: 'Total Inscriptions', value: userData.inscriptionCount.toString(), inline: true },
-                { name: 'Collections', value: userData.collections.join(', ') || 'None', inline: true },
-                { name: 'Verified', value: new Date(userData.verifiedAt).toLocaleDateString(), inline: true }
+                { name: 'Address', value: `\`${userData.address}\`` },
+                { name: 'Inscriptions', value: userData.inscriptionCount.toString(), inline: true },
+                { name: 'Collections', value: userData.collections.join(', ') || 'None', inline: true }
             );
 
         await interaction.reply({ embeds: [embed] });
@@ -202,41 +163,26 @@ client.on('interactionCreate', async (interaction) => {
     if (commandName === 'collections') {
         const embed = new EmbedBuilder()
             .setColor(0xFFD700)
-            .setTitle('🎴 Supported Collections')
-            .setDescription('Collections that can earn you roles:');
+            .setTitle('🎴 Supported Collections');
 
-        for (const [name, data] of Object.entries(collections)) {
-            embed.addFields({
-                name: data.emoji + ' ' + name,
-                value: data.description || 'Custom collection'
-            });
-        }
+        Object.entries(collections).forEach(([name, data]) => {
+            embed.addFields({ name: `${data.emoji} ${name}`, value: data.description });
+        });
 
         await interaction.reply({ embeds: [embed] });
     }
 
     if (commandName === 'unlink') {
         const data = loadData();
-        
         if (data[user.id]) {
             delete data[user.id];
             saveData(data);
-            
-            // Remove roles
-            const member = await guild.members.fetch(user.id);
-            for (const [, colData] of Object.entries(collections)) {
-                if (colData.roleId) {
-                    const role = guild.roles.cache.get(colData.roleId);
-                    if (role) await member.roles.remove(role);
-                }
-            }
-            
-            await interaction.reply('✅ Your address has been unlinked and roles removed.');
+            // Optional: remove roles here
+            await interaction.reply('✅ Address unlinked.');
         } else {
-            await interaction.reply('❌ You haven\'t linked an address yet.');
+            await interaction.reply("❌ No address linked.");
         }
     }
 });
 
-// Start bot
 client.login(process.env.DISCORD_BOT_TOKEN);
